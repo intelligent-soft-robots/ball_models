@@ -1,0 +1,7 @@
+numpy
+scipy
+sympy
+tomlkit
+matplotlib
+pin
+pybind11
