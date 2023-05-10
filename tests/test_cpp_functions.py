@@ -1,5 +1,3 @@
-import ball_models
-
 def test_ball_models_import():
     import ball_models
 
@@ -26,12 +24,33 @@ def test_ball_models_import():
     )
 
 def test_cpp_integrate():
-    ball_models
-    pass
+    import ball_models
+    import numpy as np
+
+    state = np.array([0.0, 0.0, 1.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0])
+    dt = 0.5
+
+    model = ball_models.BallTrajectory("./config/config.toml")
+    model.integrate(state, dt)
 
 def test_cpp_integrate_with_contacts():
-    pass
+    import ball_models
+    import numpy as np
 
+    ball_state = np.array([0.0, 0.0, 1.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0])
+    racket_state = [0.0]
+    dt = 0.5
+
+    model = ball_models.BallTrajectory("./config/config.toml")
+    model.integrate_with_contacts(ball_state, racket_state, dt)
 
 def test_cpp_simulate():
-    pass
+    import ball_models
+    import numpy as np
+
+    ball_state = np.array([0.0, 0.0, 1.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0])
+    duration = 2.0
+    dt = 0.5
+
+    model = ball_models.BallTrajectory("./config/config.toml")
+    model.simulate(ball_state, duration, dt)

@@ -21,13 +21,13 @@ class BallTrajectory
 {
 private:
     // physics parameter
-    double c_drag_;   // Drag coefficient
-    double c_lift_;   // Lift coefficient
-    double c_decay_;  // Spin decay coefficient
     double m_ball_;   // Mass of the ball
     double r_ball_;   // Radius of the ball
     double rho_;      // Air density
     double g_;        // Local gravitational constant
+    double c_drag_;   // Drag coefficient
+    double c_lift_;   // Lift coefficient
+    double c_decay_;  // Spin decay coefficient
 
     // precalculated constants
     double k_drag_;
@@ -89,6 +89,15 @@ private:
 
 public:
     /**
+     * @brief Construct a new Ball Trajectory object
+     *
+     * Constructor providing an absolute file path to a TOML file.
+     *
+     * @param config_path file path to TOML file.
+     */
+    BallTrajectory(std::string config_path);
+
+    /**
      * @brief Constructor with directly specifying the
      * simulation parameters via given attributes.
      *
@@ -111,15 +120,6 @@ public:
                    double drag_coefficient,
                    double lift_coefficient,
                    double decay_coefficient);
-
-    /**
-     * @brief Construct a new Ball Trajectory object
-     *
-     * Constructor providing an absolute file path to a TOML file.
-     *
-     * @param config_path file path to TOML file.
-     */
-    BallTrajectory(std::string config_path);
 
     /**
      * @brief One integration step

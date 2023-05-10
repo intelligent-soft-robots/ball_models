@@ -7,8 +7,6 @@ Eigen::VectorXd table_contact_model(const Eigen::VectorXd q)
     Eigen::MatrixXd contact_matrix = Eigen::MatrixXd::Identity(9, 9);
     contact_matrix(5, 5) = -0.95;
 
-    std::cout << contact_matrix << "\n";
-
     Eigen::VectorXd q_post = contact_matrix * q;
 
     return q_post;
