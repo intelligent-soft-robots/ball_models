@@ -1,0 +1,8 @@
+[ball_dynamics]
+ball_mass = 0.0027
+ball_radius = 0.02
+air_density = 1.18
+graviational_constant = 9.80801
+drag_coefficient = 0.47016899
+lift_coefficient = 1.46968343
+decay_coefficient = 0.005054473513775579

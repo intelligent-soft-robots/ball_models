@@ -2,18 +2,18 @@
 
 namespace ball_models
 {
-    
-Eigen::VectorXd linear_racket_model(const Eigen::VectorXd& q)
+Eigen::VectorXd linear_racket_model(const Eigen::VectorXd ball_state, const Eigen::VectorXd racket_state)
 {
     Eigen::MatrixXd contact_matrix = Eigen::MatrixXd::Ones(9, 9);
-    Eigen::VectorXd q_post = contact_matrix * q;
+    Eigen::VectorXd q_post = contact_matrix * ball_state;
 
+    
     return q_post;
 }
 
-bool detect_racket_contact(const Eigen::VectorXd& q)
+bool detect_racket_contact(const Eigen::VectorXd ball_state, const Eigen::VectorXd racket_state)
 {
     return false;
 }
 
-} // namespace ball_models
+}  // namespace ball_models

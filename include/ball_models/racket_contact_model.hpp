@@ -4,8 +4,7 @@
 
 namespace ball_models
 {
+Eigen::VectorXd linear_racket_model(const Eigen::VectorXd ball_state, const Eigen::VectorXd racket_state);
+bool detect_racket_contact(const Eigen::VectorXd ball_state, const Eigen::VectorXd racket_state);
 
-Eigen::VectorXd linear_racket_model(const Eigen::VectorXd& q);
-bool detect_racket_contact(const Eigen::VectorXd& q);
-
-} // namespace ball_models
+}  // namespace ball_models

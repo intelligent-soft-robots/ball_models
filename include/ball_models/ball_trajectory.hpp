@@ -9,13 +9,14 @@
 #include <eigen3/Eigen/Dense>
 #include <iostream>
 #include <vector>
+#include <string>
 
+#include "ball_models/toml/toml.hpp"
 #include "ball_models/racket_contact_model.hpp"
 #include "ball_models/table_contact_model.hpp"
 
 namespace ball_models
 {
-    
 class BallTrajectory
 {
 private:
@@ -31,16 +32,28 @@ private:
     // precalculated constants
     double k_drag_;
     double k_lift_;
+    double k_decay_;
 
     // system variables
     Eigen::Vector3d position_;
     Eigen::Vector3d velocity_;
     Eigen::Vector3d angular_velocity_;
     Eigen::VectorXd state_;
+    Eigen::VectorXd state_dot_;
 
     // position trajectory
     std::vector<Eigen::VectorXd> trajectory_;
 
+    // configuration file path
+    toml::table config_;
+
+    void compute_coefficients();
+
+    // internal functions
+    void update_state(Eigen::VectorXd state);
+    void compute_derivative();
+    void step(double dt);
+    
 public:
     /**
      * Constructor
@@ -52,15 +65,17 @@ public:
                    double ball_radius,
                    double air_density,
                    double graviational_constant);
+    
+    BallTrajectory(std::string config_path);
+    
+    Eigen::VectorXd integrate(const Eigen::VectorXd state, double dt);
+    Eigen::VectorXd integrate_with_contacts(const Eigen::VectorXd ball_state, const Eigen::VectorXd racket_state, double dt);
 
-    Eigen::VectorXd step(double dt);
-    Eigen::VectorXd compute_derivative();
-    Eigen::MatrixXd compute_jacobian(const Eigen::VectorXd& state);
+    std::vector<Eigen::VectorXd> simulate(const Eigen::VectorXd state, double duration, double dt);
 
-    void simulate(double duration, double dt);
-    void update_state(Eigen::VectorXd state);
+    Eigen::MatrixXd compute_jacobian(const Eigen::VectorXd state);
 };
 
 #endif  // BALL_TRAJECTORY_HPP
 
-} // namespace ball_models
+}  // namespace ball_models

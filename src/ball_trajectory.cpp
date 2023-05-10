@@ -2,6 +2,30 @@
 
 namespace ball_models
 {
+BallTrajectory::BallTrajectory(std::string config_file_path)
+{   
+    try {
+        config_ = toml::parse_file(config_file_path);
+        const auto& ballDynamics = config_["ball_dynamics"];
+
+        // FIXME: value, as_floating_point, value_exact do not work! 
+        // Can introduce an unnoticed error!
+
+        m_ball_ = ballDynamics["ball_mass"].value_or(0.0);
+        r_ball_ = ballDynamics["ball_radius"].value_or(0.0);
+        rho_ = ballDynamics["air_density"].value_or(0.0);
+        g_ = ballDynamics["graviational_constant"].value_or(0.0);
+        c_drag_ = ballDynamics["drag_coefficient"].value_or(0.0);
+        c_lift_ = ballDynamics["lift_coefficient"].value_or(0.0);
+        c_decay_ = ballDynamics["decay_coefficient"].value_or(0.0);
+    } catch (const toml::parse_error& err) {
+        std::cerr << "Parsing failed: " << err << std::endl;
+    } catch (const std::exception& ex) {
+        std::cerr << "Error: " << ex.what() << std::endl;
+    }
+
+    compute_coefficients();    
+}
 
 BallTrajectory::BallTrajectory(double drag_coefficient,
                                double lift_coefficient,
@@ -18,10 +42,16 @@ BallTrajectory::BallTrajectory(double drag_coefficient,
       rho_(air_density),
       g_(graviational_constant)
 {
+    compute_coefficients();
+}
+
+void BallTrajectory::compute_coefficients()
+{
     double A = M_PI * r_ball_ * r_ball_;
 
     k_drag_ = -0.5 * c_drag_ * rho_ * A / m_ball_;
     k_lift_ = 0.5 * rho_ * c_lift_ * A * r_ball_ / m_ball_;
+    k_decay_ = c_decay_;
 }
 
 void BallTrajectory::update_state(Eigen::VectorXd state)
@@ -32,8 +62,12 @@ void BallTrajectory::update_state(Eigen::VectorXd state)
     state_ = state;
 }
 
-Eigen::VectorXd BallTrajectory::compute_derivative()
-{
+void BallTrajectory::compute_derivative()
+{   
+    position_ = state_.segment<3>(0);
+    velocity_ = state_.segment<3>(3);
+    angular_velocity_ = state_.segment<3>(6);
+
     double v_norm = velocity_.norm();
     Eigen::Vector3d omega_v_cross = angular_velocity_.cross(velocity_);
 
@@ -44,46 +78,70 @@ Eigen::VectorXd BallTrajectory::compute_derivative()
     Eigen::Vector3d acceleration_ =
         gravity_acceleration + drag_acceleration + magnus_acceleration;
 
-    Eigen::Vector3d angular_acceleration_(0.0, 0.0, 0.0);
-
+    Eigen::Vector3d angular_acceleration_;
+        angular_acceleration_.setOnes();
+        angular_acceleration_ *= k_decay_;
+    
     // new state vector
     Eigen::VectorXd dq_dt(9);
     dq_dt << velocity_, acceleration_, angular_acceleration_;
-
-    return dq_dt;
+    state_dot_ = dq_dt;
 }
 
-Eigen::VectorXd BallTrajectory::step(double dt)
-{
-    Eigen::VectorXd q(9);
-    q << position_, velocity_, angular_velocity_;
+void BallTrajectory::step(double dt)
+{   
+    compute_derivative();
+    
+    Eigen::VectorXd _q = state_ + dt * state_dot_;
 
-    Eigen::VectorXd dq_dt = compute_derivative();
-    Eigen::VectorXd q_post = q + dt * dq_dt;
-
-    if (detect_table_contact(q_post, 0.77))
+    if (detect_table_contact(_q, 0.77))
     {
-        q_post = linear_contact_model(q);
+        _q = linear_contact_model(state_);
     }
 
-    if (detect_racket_contact(q_post))
-    {
-        q_post = linear_racket_model(q);
-    }
-
-    return q_post;
+    state_ = _q;
 }
 
-void BallTrajectory::simulate(double duration, double dt)
+Eigen::VectorXd BallTrajectory::integrate(const Eigen::VectorXd state, double dt)
 {
+    state_ = state;
+    step(dt);
+
+    return state_;
+}
+
+
+Eigen::VectorXd BallTrajectory::integrate_with_contacts(const Eigen::VectorXd ball_state, const Eigen::VectorXd racket_state, double dt) 
+{
+    Eigen::VectorXd ball_state_after_step = integrate(ball_state, dt);
+
+    if (detect_racket_contact(ball_state_after_step, racket_state))
+    {
+        state_ = linear_racket_model(ball_state, racket_state);
+    }
+    else
+    {
+       state_ = ball_state_after_step;
+    }
+
+    return state_;
+}
+
+std::vector<Eigen::VectorXd> BallTrajectory::simulate(const Eigen::VectorXd state, double duration,
+                                                      double dt)
+{
+    Eigen::VectorXd current_state = state;
+
     for (double t = 0; t < duration; t += dt)
     {
-        state_ = step(dt);
-        trajectory_.push_back(state_);
+        current_state = integrate(current_state, dt);
+        trajectory_.push_back(current_state);
     }
+
+    return trajectory_;
 }
 
-Eigen::MatrixXd BallTrajectory::compute_jacobian(const Eigen::VectorXd& state)
+Eigen::MatrixXd BallTrajectory::compute_jacobian(const Eigen::VectorXd state)
 {
     // Define Jacobian matrix
     Eigen::MatrixXd FJacobian(9, 9);
@@ -120,4 +178,4 @@ Eigen::MatrixXd BallTrajectory::compute_jacobian(const Eigen::VectorXd& state)
     return FJacobian;
 }
 
-} // namespace ball_models
+}  // namespace ball_models

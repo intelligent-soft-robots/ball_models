@@ -1,8 +1,0 @@
-[ball_dynamics]
-m_ball = 0.0027
-r_ball = 0.02
-rho = 1.18
-g = 9.80801
-c_drag = 0.47016899
-c_lift = 1.46968343
-c_decay = 0.005054473513775579
