@@ -12,9 +12,6 @@ PYBIND11_MODULE(ball_models_wrp, m)
     m.doc() = "Wrapper class for ball models.";
 
     py::class_<ball_models::BallTrajectory>(m, "BallTrajectory")
-        //.def("update_state", &BallTrajectory::update_state)
-        //.def("step", &BallTrajectory::step)
-        //.def("compute_derivative", &BallTrajectory::compute_derivative)
         .def(py::init<double, double, double, double, double, double, double>())
         .def(py::init<std::string>())
         .def("integrate", &ball_models::BallTrajectory::integrate)

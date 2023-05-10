@@ -96,7 +96,7 @@ void BallTrajectory::step(double dt)
 
     if (detect_table_contact(_q, 0.77))
     {
-        _q = linear_contact_model(state_);
+        _q = table_contact_model(state_);
     }
 
     state_ = _q;
@@ -117,7 +117,7 @@ Eigen::VectorXd BallTrajectory::integrate_with_contacts(const Eigen::VectorXd ba
 
     if (detect_racket_contact(ball_state_after_step, racket_state))
     {
-        state_ = linear_racket_model(ball_state, racket_state);
+        state_ = racket_contact_model(ball_state, racket_state);
     }
     else
     {
