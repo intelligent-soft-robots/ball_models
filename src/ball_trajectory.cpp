@@ -58,7 +58,7 @@ void BallTrajectory::compute_coefficients()
     k_decay_ = c_decay_;
 }
 
-void BallTrajectory::update_state(Eigen::VectorXd state)
+void BallTrajectory::update_state(Eigen::VectorXd& state)
 {
     position_ = state.segment<3>(0);
     velocity_ = state.segment<3>(3);
@@ -106,7 +106,7 @@ void BallTrajectory::step(double dt)
     state_ = _q;
 }
 
-Eigen::VectorXd BallTrajectory::integrate(const Eigen::VectorXd state,
+Eigen::VectorXd BallTrajectory::integrate(const Eigen::VectorXd& state,
                                           double dt)
 {
     state_ = state;
@@ -116,8 +116,8 @@ Eigen::VectorXd BallTrajectory::integrate(const Eigen::VectorXd state,
 }
 
 Eigen::VectorXd BallTrajectory::integrate_with_contacts(
-    const Eigen::VectorXd ball_state,
-    const Eigen::VectorXd racket_state,
+    const Eigen::VectorXd& ball_state,
+    const Eigen::VectorXd& racket_state,
     double dt)
 {
     Eigen::VectorXd ball_state_after_step = integrate(ball_state, dt);
@@ -135,7 +135,7 @@ Eigen::VectorXd BallTrajectory::integrate_with_contacts(
 }
 
 std::vector<Eigen::VectorXd> BallTrajectory::simulate(
-    const Eigen::VectorXd state, double duration, double dt)
+    const Eigen::VectorXd& state, double duration, double dt)
 {
     Eigen::VectorXd current_state = state;
 
@@ -148,7 +148,7 @@ std::vector<Eigen::VectorXd> BallTrajectory::simulate(
     return trajectory_;
 }
 
-Eigen::MatrixXd BallTrajectory::compute_jacobian(const Eigen::VectorXd state)
+Eigen::MatrixXd BallTrajectory::compute_jacobian(const Eigen::VectorXd& state)
 {
     // Define Jacobian matrix
     Eigen::MatrixXd FJacobian(9, 9);

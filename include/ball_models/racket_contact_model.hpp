@@ -14,8 +14,8 @@ namespace ball_models
  * @param racket_state racket state.
  * @return Eigen::VectorXd ball state after contact.
  */
-Eigen::VectorXd racket_contact_model(const Eigen::VectorXd ball_state,
-                                     const Eigen::VectorXd racket_state);
+Eigen::VectorXd racket_contact_model(const Eigen::VectorXd& ball_state,
+                                     const Eigen::VectorXd& racket_state);
 
 /**
  * @brief Racket contact detection.
@@ -29,7 +29,7 @@ Eigen::VectorXd racket_contact_model(const Eigen::VectorXd ball_state,
  * @return true if contact is detected
  * @return false if no contact is detected.
  */
-bool detect_racket_contact(const Eigen::VectorXd ball_state,
-                           const Eigen::VectorXd racket_state);
+bool detect_racket_contact(const Eigen::VectorXd& ball_state,
+                           const Eigen::VectorXd& racket_state);
 
 }  // namespace ball_models

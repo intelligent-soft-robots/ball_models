@@ -66,7 +66,7 @@ private:
      *
      * @param state current ball state
      */
-    void update_state(Eigen::VectorXd state);
+    void update_state(Eigen::VectorXd& state);
 
     /**
      * @brief Computes derivate of the system state
@@ -133,7 +133,7 @@ public:
      *
      * @return Eigen::VectorXd new ball state after integration
      */
-    Eigen::VectorXd integrate(const Eigen::VectorXd state, double dt);
+    Eigen::VectorXd integrate(const Eigen::VectorXd& state, double dt);
 
     /**
      * @brief One integration step
@@ -147,8 +147,8 @@ public:
      * @param dt time step.
      * @return Eigen::VectorXd
      */
-    Eigen::VectorXd integrate_with_contacts(const Eigen::VectorXd ball_state,
-                                            const Eigen::VectorXd racket_state,
+    Eigen::VectorXd integrate_with_contacts(const Eigen::VectorXd& ball_state,
+                                            const Eigen::VectorXd& racket_state,
                                             double dt);
 
     /**
@@ -164,7 +164,7 @@ public:
      * @return std::vector<Eigen::VectorXd> Returns a array of ball states
      * for each specified time step.
      */
-    std::vector<Eigen::VectorXd> simulate(const Eigen::VectorXd state,
+    std::vector<Eigen::VectorXd> simulate(const Eigen::VectorXd& state,
                                           double duration,
                                           double dt);
 
@@ -177,7 +177,7 @@ public:
      * @param state supporting ball state for linearization.
      * @return Eigen::MatrixXd linear motion jacobian.
      */
-    Eigen::MatrixXd compute_jacobian(const Eigen::VectorXd state);
+    Eigen::MatrixXd compute_jacobian(const Eigen::VectorXd& state);
 };
 
 #endif  // BALL_TRAJECTORY_HPP
