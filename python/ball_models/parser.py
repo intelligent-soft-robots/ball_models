@@ -3,6 +3,7 @@ import pam_configuration
 
 _CONFIG_FILE_SUFFIX = pathlib.Path("ball_models") / "config.toml"
 
+
 def get_default_config_file() -> pathlib.Path:
     """
     Returns the absolute path to the default configuration, as it has been

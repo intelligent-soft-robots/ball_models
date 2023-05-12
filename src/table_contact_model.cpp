@@ -12,7 +12,7 @@ Eigen::VectorXd table_contact_model(const Eigen::VectorXd& ball_state)
     return q_post;
 }
 
-bool detect_table_contact(const Eigen::VectorXd& ball_state, double reset_height = 0.77)
+bool detect_table_contact(const Eigen::VectorXd& ball_state, double reset_height = 0.76)
 {
     if (ball_state(2) < reset_height && ball_state(5) < 0.0)
     {

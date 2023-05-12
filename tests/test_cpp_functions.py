@@ -23,6 +23,7 @@ def test_ball_models_import():
         decay_coefficient,
     )
 
+
 def test_cpp_integrate():
     import ball_models
     import numpy as np
@@ -32,6 +33,7 @@ def test_cpp_integrate():
 
     model = ball_models.BallTrajectory("./config/config.toml")
     model.integrate(state, dt)
+
 
 def test_cpp_integrate_with_contacts():
     import ball_models
@@ -43,6 +45,7 @@ def test_cpp_integrate_with_contacts():
 
     model = ball_models.BallTrajectory("./config/config.toml")
     model.integrate_with_contacts(ball_state, racket_state, dt)
+
 
 def test_cpp_simulate():
     import ball_models

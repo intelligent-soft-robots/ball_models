@@ -42,9 +42,6 @@ private:
     Eigen::VectorXd state_;
     Eigen::VectorXd state_dot_;
 
-    // position trajectory
-    std::vector<Eigen::VectorXd> trajectory_;
-
     // configuration file path
     toml::table config_;
 

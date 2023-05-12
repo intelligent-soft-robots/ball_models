@@ -53,9 +53,9 @@ void BallTrajectory::compute_coefficients()
 {
     double A = M_PI * r_ball_ * r_ball_;
 
-    k_drag_ = -0.5 * c_drag_ * rho_ * A / m_ball_;
+    k_drag_ = -0.5 * rho_ * c_drag_ * A / m_ball_;
     k_lift_ = 0.5 * rho_ * c_lift_ * A * r_ball_ / m_ball_;
-    k_decay_ = c_decay_;
+    k_decay_ = -c_decay_;
 }
 
 void BallTrajectory::update_state(Eigen::VectorXd& state)
@@ -68,7 +68,6 @@ void BallTrajectory::update_state(Eigen::VectorXd& state)
 
 void BallTrajectory::compute_derivative()
 {
-    position_ = state_.segment<3>(0);
     velocity_ = state_.segment<3>(3);
     angular_velocity_ = state_.segment<3>(6);
 
@@ -98,7 +97,7 @@ void BallTrajectory::step(double dt)
 
     Eigen::VectorXd _q = state_ + dt * state_dot_;
 
-    if (detect_table_contact(_q, 0.77))
+    if (detect_table_contact(_q, 0.76))
     {
         _q = table_contact_model(state_);
     }
@@ -138,14 +137,15 @@ std::vector<Eigen::VectorXd> BallTrajectory::simulate(
     const Eigen::VectorXd& state, double duration, double dt)
 {
     Eigen::VectorXd current_state = state;
+    std::vector<Eigen::VectorXd> trajectory;
 
-    for (double t = 0; t < duration; t += dt)
+    for (double t = 0; t <= duration; t += dt)
     {
         current_state = integrate(current_state, dt);
-        trajectory_.push_back(current_state);
+        trajectory.push_back(current_state);
     }
 
-    return trajectory_;
+    return trajectory;
 }
 
 Eigen::MatrixXd BallTrajectory::compute_jacobian(const Eigen::VectorXd& state)
