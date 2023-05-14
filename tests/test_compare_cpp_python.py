@@ -1,133 +1,166 @@
-import pathlib
-from typing import Optional, Sequence
+import time
 
-import ball_models
 import matplotlib.pyplot as plt
-import tomlkit
-from numpy import array, cross, hstack, ones, pi
-from numpy.linalg import norm
+from numpy import array, arange, round
+
 from numpy.testing import assert_array_almost_equal
 
-RESET_HEIGHT = 0.76
+import ball_trajectory_numpy
+import ball_trajectory_symbolic
+import ball_models
 
 
-def load_toml(file_path: str):
-    with open(pathlib.Path(file_path), mode="r") as fp:
-        config = fp.read()
-        config_dict = dict(tomlkit.parse(config))
-
-    return config_dict
-
-
-class FlightModel:
-    def __init__(self, physics_config) -> None:
-        m = physics_config["ball_dynamics"]["ball_mass"]
-        r = physics_config["ball_dynamics"]["ball_radius"]
-        rho = physics_config["ball_dynamics"]["air_density"]
-        g = physics_config["ball_dynamics"]["graviational_constant"]
-        A = pi * r**2  # cross-sectional area [m^2]
-
-        c_drag = physics_config["ball_dynamics"]["drag_coefficient"]
-        c_lift = physics_config["ball_dynamics"]["lift_coefficient"]
-        c_decay = physics_config["ball_dynamics"]["decay_coefficient"]
-
-        self.k_magnus = 0.5 * rho * c_lift * A * r / m
-        self.k_drag = -0.5 * rho * c_drag * A / m
-        self.k_gravity = g
-        self.k_decay = c_decay
-
-    def derivative(self, q: Sequence[float], t: Optional[float] = None):
-        q = array(q)
-
-        k_magnus = self.k_magnus
-        k_drag = self.k_drag
-        k_decay = self.k_decay
-        k_gravity = self.k_gravity
-
-        # System states
-        v = q[3:6]
-        omega = q[6:9]
-
-        F_gravity = k_gravity * array([0, 0, -1])
-        F_drag = k_drag * norm(v) * v
-        F_magnus = k_magnus * cross(omega, v)
-
-        # System dynamics
-        dv_dt = F_gravity + F_drag + F_magnus
-
-        domega_dt = -k_decay * ones(3)
-        dq_dt = hstack((v, dv_dt, domega_dt))
-
-        return dq_dt
-
-
-def linear_contact_model(x_before):
-    contact_matrix = array(
-        [
-            [1, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 1, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 1, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 1, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 1, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, -0.95, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 1, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 1, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 1],
-        ]
-    )
-
-    x_after = contact_matrix @ x_before
-    return x_after
-
-
-def simulate(q, duration, dt):
-    path = "/home/adittrich/test_workspace/workspace/src/ball_models/config/config.toml"
-    config = load_toml(path)
-
-    ball_dynamics_model = FlightModel(config)
-
-    t = 0.0
-
-    trajectory = []
-
-    while t < duration:
-        dq_dt = ball_dynamics_model.derivative(q)
-        q_next = q + dt * dq_dt
-
-        if q_next[2] < RESET_HEIGHT and q_next[5] < 0:
-            q_next = linear_contact_model(q)
-
-        trajectory.append(q_next)
-        q = q_next
-        t += dt
-
-    return array(trajectory)
-
-
-def test_model():
-    cpp_model = ball_models.BallTrajectory(
-        "/home/adittrich/test_workspace/workspace/src/ball_models/config/config.toml"
-    )
+def test_results_model():
+    config_path = "/home/adittrich/test_workspace/workspace/src/ball_models/config/config.toml"
+    
+    cpp_model = ball_models.BallTrajectory(config_path)
+    python_model = ball_trajectory_numpy.BallTrajectoryNumpy(config_path)
+    symbolic_model = ball_trajectory_symbolic.BallTrajectorySymbolic(config_path)
 
     q = [0.0, 0.0, 1.0, 12.0, 2.0, 1.2, 100.0, 1.0, 20.0]
     duration = 1.0
     dt = 0.001
 
     cpp_trajectory = cpp_model.simulate(q, duration, dt)
-    py_trajectory = simulate(q, duration, dt)
+    py_trajectory = python_model.simulate(q, duration, dt)
+    symbolic_trajectory = symbolic_model.simulate(q, duration, dt)
 
     cpp_trajectory = array(cpp_trajectory)
     py_trajectory = array(py_trajectory)
+    symbolic_trajectory = array(symbolic_trajectory)
 
+    # Plotting of trajectories
     fig, axs = plt.subplots(9, 1)
+    colors = ["#CF5369", "#0193d7", "#46b361"]
 
     for i, ax in enumerate(axs):
-        ax.plot(cpp_trajectory[:, i])
-        ax.plot(py_trajectory[:, i], linestyle="dashed")
+        ax.plot(cpp_trajectory[:, i], label="C++ Model", color=colors[0])
+        ax.plot(py_trajectory[:, i], linestyle="dashed", label="Python Model", color=colors[1])
+        ax.plot(symbolic_trajectory[:, i], linestyle="dotted", label="Sympy Model", linewidth=4, color=colors[2])
 
-    plt.show()
+        ax.legend()
+
     assert_array_almost_equal(cpp_trajectory, py_trajectory)
 
 
+def test_benchmark_cpp():
+    config_path = "/home/adittrich/test_workspace/workspace/src/ball_models/config/config.toml"
+    
+    cpp_model = ball_models.BallTrajectory(config_path)
+
+    q = [0.0, 0.0, 1.0, 12.0, 2.0, 1.2, 100.0, 1.0, 20.0]
+    duration = 1.0
+
+    frequencies = [10, 100, 200, 500, 1000, 2000, 10000, 50000, 100000]
+    
+    frequencies = [2**i for i in range(20)]
+
+    cpp_model_time = []
+    
+    for frequency in frequencies:
+        dt = 1 / frequency
+
+        # C++ Model
+        start_time = time.time()
+        cpp_model.simulate(q, duration, dt)
+        sim_time = time.time() - start_time
+
+        cpp_model_time.append(sim_time)
+
+    # Plotting of computation time
+    fig, ax = plt.subplots(layout='constrained')
+
+    ax.plot(frequencies, cpp_model_time, label="C++ Model")
+
+    # Add some text for labels, title and custom x-axis tick labels, etc.
+    ax.set_xlabel('Sample rate [s-1]')
+    ax.set_ylabel('Computation time [s]')
+    ax.set_title('Computation time of C++ Model')
+
+    ax.legend()
+    ax.grid()
+
+
+def test_benchmark_models():
+    config_path = "/home/adittrich/test_workspace/workspace/src/ball_models/config/config.toml"
+    
+    cpp_model = ball_models.BallTrajectory(config_path)
+    python_model = ball_trajectory_numpy.BallTrajectoryNumpy(config_path)
+    symbolic_model = ball_trajectory_symbolic.BallTrajectorySymbolic(config_path)
+
+    q = [0.0, 0.0, 1.0, 12.0, 2.0, 1.2, 100.0, 1.0, 20.0]
+    duration = 1.0
+
+    frequencies = [10, 100, 200, 500, 1000, 2000, 10000, 50000, 100000]
+    frequencies = [10, 100, 200, 500, 1000, 2000]
+    
+    cpp_model_time = []
+    python_model_time = []
+    sympy_model_time = []
+    
+    for frequency in frequencies:
+        dt = 1 / frequency
+
+        # C++ Model
+        start_time = time.time()
+        cpp_model.simulate(q, duration, dt)
+        sim_time = time.time() - start_time
+
+        print(f"Frequency: {frequency}, CPP: {sim_time}")
+        cpp_model_time.append(sim_time)
+
+        # Python Model     
+        start_time = time.time()
+        python_model.simulate(q, duration, dt)
+        sim_time = time.time() - start_time
+
+        print(f"Frequency: {frequency}, Python: {sim_time}")
+        python_model_time.append(sim_time)
+
+        # Python Model     
+        start_time = time.time()
+        symbolic_model.simulate(q, duration, dt)
+        sim_time = time.time() - start_time
+
+        print(f"Frequency: {frequency}, Sympy: {sim_time}")
+        sympy_model_time.append(sim_time)
+
+    # Plotting of computation time
+    fig, ax = plt.subplots(layout='constrained')
+
+    x = arange(len(frequencies))
+    width = 0.2  # the width of the bars
+    multiplier = 0
+    colors = ["#CF5369", "#0193d7", "#46b361"]
+
+    model_data = {
+        "C++": cpp_model_time,
+        "Python": python_model_time,
+        "Sympy": sympy_model_time,
+    }
+
+    for attribute, measurement in model_data.items():
+        measurement_ns = array(measurement)*1000
+        measurement_round = round(measurement_ns, 1)
+        offset = width * multiplier
+        rects = ax.bar(x + offset, measurement_round, width, label=attribute, color=colors.pop(0))
+        ax.bar_label(rects, padding=3)
+        multiplier += 1
+
+    # Add some text for labels, title and custom x-axis tick labels, etc.
+    ax.set_xlabel('Sample rate [s-1]')
+    ax.set_ylabel('Computation time [ms]')
+    ax.set_title('Computation time for different simulation approaches')
+    ax.set_xticks(x + width, frequencies)
+    ax.set_ylim(0, 100.0)
+
+    ax.legend(loc='upper left', ncols=3)
+    ax.grid()
+
+
 if __name__ == "__main__":
-    test_model()
+    test_benchmark_cpp()
+    test_results_model()
+    test_benchmark_models()
+
+    plt.show()
