@@ -153,6 +153,8 @@ def test_benchmark_models():
     ax.set_title('Computation time for different simulation approaches')
     ax.set_xticks(x + width, frequencies)
     ax.set_ylim(0, 100.0)
+    ax.axhline(5.0, color="red")
+    ax.annotate("200 Hz threshold", xy=(sum(ax.get_xlim()) / 2, 6), color="red", ha="center")
 
     ax.legend(loc='upper left', ncols=3)
     ax.grid()
