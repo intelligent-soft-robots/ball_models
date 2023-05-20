@@ -1,4 +1,5 @@
 import pathlib
+
 import pam_configuration
 
 _CONFIG_FILE_SUFFIX = pathlib.Path("ball_models") / "config.toml"

@@ -139,10 +139,10 @@ std::vector<Eigen::VectorXd> BallTrajectory::simulate(
     Eigen::VectorXd current_state = state;
     std::vector<Eigen::VectorXd> trajectory;
 
-    // dt is substracted so the simulate for loop is equivalent 
+    // dt is substracted so the simulate for loop is equivalent
     // to numpy.arange
     for (double t = 0; t <= duration - dt; t += dt)
-    {   
+    {
         current_state = integrate(current_state, dt);
         trajectory.push_back(current_state);
     }

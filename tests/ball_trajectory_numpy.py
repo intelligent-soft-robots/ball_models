@@ -1,11 +1,12 @@
 import pathlib
-from typing import Sequence, Optional
+from typing import Optional, Sequence
 
 import tomlkit
 from numpy import array, cross, hstack, ones, pi
 from numpy.linalg import norm
 
 RESET_HEIGHT = 0.76
+
 
 def load_toml(file_path: str):
     with open(pathlib.Path(file_path), mode="r") as fp:
@@ -57,7 +58,7 @@ class BallTrajectoryNumpy:
         dq_dt = hstack((v, dv_dt, domega_dt))
 
         return dq_dt
-    
+
     def simulate(self, q, duration, dt):
         t = 0.0
 

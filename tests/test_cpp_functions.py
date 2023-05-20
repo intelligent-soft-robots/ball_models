@@ -25,8 +25,9 @@ def test_ball_models_import():
 
 
 def test_cpp_integrate():
-    import ball_models
     import numpy as np
+
+    import ball_models
 
     state = np.array([0.0, 0.0, 1.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0])
     dt = 0.5
@@ -36,8 +37,9 @@ def test_cpp_integrate():
 
 
 def test_cpp_integrate_with_contacts():
-    import ball_models
     import numpy as np
+
+    import ball_models
 
     ball_state = np.array([0.0, 0.0, 1.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0])
     racket_state = [0.0]
@@ -48,8 +50,9 @@ def test_cpp_integrate_with_contacts():
 
 
 def test_cpp_simulate():
-    import ball_models
     import numpy as np
+
+    import ball_models
 
     ball_state = np.array([0.0, 0.0, 1.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0])
     duration = 2.0

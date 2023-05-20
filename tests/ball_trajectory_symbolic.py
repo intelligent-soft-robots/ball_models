@@ -1,11 +1,12 @@
 import pathlib
-import tomlkit
 from typing import Sequence
 
 import numpy as np
 import sympy as sp
+import tomlkit
 
 RESET_HEIGHT = 0.76
+
 
 def to_sym_dict(q):
     q = np.array(q)
@@ -28,6 +29,7 @@ def to_sym_dict(q):
 
     return q_sym
 
+
 def linear_contact_model(x_before):
     contact_matrix = np.array(
         [
@@ -46,12 +48,14 @@ def linear_contact_model(x_before):
     x_after = contact_matrix @ x_before
     return x_after
 
+
 def load_toml(file_path: str):
     with open(pathlib.Path(file_path), mode="r") as fp:
         config = fp.read()
         config_dict = dict(tomlkit.parse(config))
 
     return config_dict
+
 
 class BallTrajectorySymbolic:
     def __init__(self, config_path) -> None:
@@ -128,7 +132,7 @@ class BallTrajectorySymbolic:
 
     def derivative(self, q: Sequence[float]) -> np.ndarray:
         return np.hstack(self.dynamics.subs(to_sym_dict(q))).astype(np.float64)
-    
+
     def simulate(self, q, duration, dt):
         t = 0.0
 

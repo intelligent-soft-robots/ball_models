@@ -1,8 +1,9 @@
 import time
 
-import ball_models
 import matplotlib.pyplot as plt
 import numpy as np
+
+import ball_models
 
 
 def test_sim():
