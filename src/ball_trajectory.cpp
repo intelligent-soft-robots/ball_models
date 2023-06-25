@@ -133,21 +133,25 @@ Eigen::VectorXd BallTrajectory::integrate_with_contacts(
     return state_;
 }
 
-std::vector<Eigen::VectorXd> BallTrajectory::simulate(
+std::tuple<std::vector<float>, std::vector<Eigen::VectorXd>> BallTrajectory::simulate(
     const Eigen::VectorXd& state, double duration, double dt)
 {
     Eigen::VectorXd current_state = state;
+    std::vector<float> time_stamps;
     std::vector<Eigen::VectorXd> trajectory;
+    
 
     // dt is substracted so the simulate for loop is equivalent
     // to numpy.arange
-    for (double t = 0; t <= duration - dt; t += dt)
+    for (double t = 0; t < duration - dt; t += dt)
     {
         current_state = integrate(current_state, dt);
+
+        time_stamps.push_back(t);
         trajectory.push_back(current_state);
     }
 
-    return trajectory;
+    return std::make_tuple(time_stamps, trajectory);
 }
 
 Eigen::MatrixXd BallTrajectory::compute_jacobian(const Eigen::VectorXd& state)

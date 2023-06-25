@@ -161,7 +161,7 @@ public:
      * @return std::vector<Eigen::VectorXd> Returns a array of ball states
      * for each specified time step.
      */
-    std::vector<Eigen::VectorXd> simulate(const Eigen::VectorXd& state,
+    std::tuple<std::vector<float>, std::vector<Eigen::VectorXd>> simulate(const Eigen::VectorXd& state,
                                           double duration,
                                           double dt);
 
