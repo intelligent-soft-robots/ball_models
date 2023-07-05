@@ -1,3 +1,4 @@
+import pathlib
 import time
 
 import ball_trajectory_numpy
@@ -8,21 +9,21 @@ from numpy.testing import assert_array_almost_equal
 
 import ball_models
 
+script_dir = pathlib.Path(__file__).resolve().parent
+config_dir = script_dir.parent / "config"
+path = config_dir / "config.toml"
+CONFIG_PATH = str(path)
 
 def test_results_model():
-    config_path = (
-        "/home/lis/workspace/spin_project/workspace/src/ball_models/config/config.toml"
-    )
-
-    cpp_model = ball_models.BallTrajectory(config_path)
-    python_model = ball_trajectory_numpy.BallTrajectoryNumpy(config_path)
-    symbolic_model = ball_trajectory_symbolic.BallTrajectorySymbolic(config_path)
+    cpp_model = ball_models.BallTrajectory(CONFIG_PATH)
+    python_model = ball_trajectory_numpy.BallTrajectoryNumpy(CONFIG_PATH)
+    symbolic_model = ball_trajectory_symbolic.BallTrajectorySymbolic(CONFIG_PATH)
 
     q = [0.0, 0.0, 1.0, 12.0, 2.0, 1.2, 100.0, 1.0, 20.0]
     duration = 1.0
     dt = 0.001
 
-    cpp_trajectory = cpp_model.simulate(q, duration, dt)
+    t, cpp_trajectory = cpp_model.simulate(q, duration, dt)
     py_trajectory = python_model.simulate(q, duration, dt)
     symbolic_trajectory = symbolic_model.simulate(q, duration, dt)
 
@@ -56,11 +57,7 @@ def test_results_model():
 
 
 def test_benchmark_cpp():
-    config_path = (
-        "/home/lis/workspace/spin_project/workspace/src/ball_models/config/config.toml"
-    )
-
-    cpp_model = ball_models.BallTrajectory(config_path)
+    cpp_model = ball_models.BallTrajectory(CONFIG_PATH)
 
     q = [0.0, 0.0, 1.0, 12.0, 2.0, 1.2, 100.0, 1.0, 20.0]
     duration = 1.0
@@ -96,13 +93,9 @@ def test_benchmark_cpp():
 
 
 def test_benchmark_models():
-    config_path = (
-        "/home/lis/workspace/spin_project/workspace/src/ball_models/config/config.toml"
-    )
-
-    cpp_model = ball_models.BallTrajectory(config_path)
-    python_model = ball_trajectory_numpy.BallTrajectoryNumpy(config_path)
-    symbolic_model = ball_trajectory_symbolic.BallTrajectorySymbolic(config_path)
+    cpp_model = ball_models.BallTrajectory(CONFIG_PATH)
+    python_model = ball_trajectory_numpy.BallTrajectoryNumpy(CONFIG_PATH)
+    symbolic_model = ball_trajectory_symbolic.BallTrajectorySymbolic(CONFIG_PATH)
 
     q = [0.0, 0.0, 1.0, 12.0, 2.0, 1.2, 100.0, 1.0, 20.0]
     duration = 1.0

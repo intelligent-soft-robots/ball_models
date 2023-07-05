@@ -1,3 +1,4 @@
+import pathlib
 import time
 
 import matplotlib.pyplot as plt
@@ -5,20 +6,21 @@ import numpy as np
 
 import ball_models
 
+script_dir = pathlib.Path(__file__).resolve().parent
+config_dir = script_dir.parent / "config"
+path = config_dir / "config.toml"
+CONFIG_PATH = str(path)
 
 def test_sim():
-    model = ball_models.BallTrajectory(
-        "/home/adittrich/test_workspace/workspace/src/ball_models/config/config.toml"
-    )
+    model = ball_models.BallTrajectory(CONFIG_PATH)
 
     duration = 1.0
     dt = 0.001
 
     q = np.array([0.0, 0.0, 1.0, 1.0, 1.0, 1.5, 0.0, 0.0, 9.8])
-    t = np.arange(0, duration, dt)
 
     start_time = time.time()
-    trajectory = model.simulate(q, duration, dt)
+    t, trajectory = model.simulate(q, duration, dt)
     delta_time = time.time() - start_time
 
     print(f"Runtime: {delta_time} s")
