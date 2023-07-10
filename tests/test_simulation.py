@@ -11,6 +11,7 @@ config_dir = script_dir.parent / "config"
 path = config_dir / "config.toml"
 CONFIG_PATH = str(path)
 
+
 def test_sim():
     model = ball_models.BallTrajectory(CONFIG_PATH)
 

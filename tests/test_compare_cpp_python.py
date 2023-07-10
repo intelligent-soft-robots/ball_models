@@ -14,6 +14,7 @@ config_dir = script_dir.parent / "config"
 path = config_dir / "config.toml"
 CONFIG_PATH = str(path)
 
+
 def test_results_model():
     cpp_model = ball_models.BallTrajectory(CONFIG_PATH)
     python_model = ball_trajectory_numpy.BallTrajectoryNumpy(CONFIG_PATH)
@@ -53,7 +54,7 @@ def test_results_model():
 
         ax.legend()
 
-    #assert_array_almost_equal(cpp_trajectory, py_trajectory)
+    # assert_array_almost_equal(cpp_trajectory, py_trajectory)
 
 
 def test_benchmark_cpp():
